@@ -1,6 +1,6 @@
 // Módulo Auth (Santiago): registro y login vía Supabase Auth.
 import { Router } from 'express';
-import { supabase } from '../config/supabase.js';
+import { supabaseAuth } from '../config/supabase.js';
 
 const router = Router();
 
@@ -13,7 +13,7 @@ router.post('/register', async (req, res) => {
 
   // email_confirm: true => el usuario queda confirmado y puede iniciar sesión
   // de inmediato (sin paso de correo). Ideal para el MVP.
-  const { data, error } = await supabase.auth.admin.createUser({
+  const { data, error } = await supabaseAuth.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'email y password son obligatorios' });
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseAuth.auth.signInWithPassword({ email, password });
   if (error) return res.status(401).json({ error: error.message });
 
   res.json({
@@ -48,7 +48,7 @@ router.post('/refresh', async (req, res) => {
     return res.status(400).json({ error: 'refresh_token es obligatorio' });
   }
 
-  const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+  const { data, error } = await supabaseAuth.auth.refreshSession({ refresh_token });
   if (error || !data?.session) {
     return res
       .status(401)
