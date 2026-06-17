@@ -1,0 +1,73 @@
+### Retoño API — pruebas
+### Úsalo con la extensión "REST Client" de VS Code (clic en "Send Request"
+### sobre cada bloque) o como referencia para Postman.
+
+@base = http://localhost:3000
+
+### 1. Healthcheck
+GET {{base}}/health
+
+### 2. Catálogo completo
+GET {{base}}/garments
+
+### 3. Catálogo filtrado (categoría + status)
+GET {{base}}/garments?category=dresses&status=available
+
+### 4. Registrar usuario
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@retonio.com",
+  "password": "123456",
+  "display_name": "Mamá Demo"
+}
+
+### 5. Login  (copia el access_token de la respuesta y pégalo abajo en @token)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@retonio.com",
+  "password": "123456"
+}
+
+### --- Pega aquí el access_token del login ---
+@token = PEGA_TU_ACCESS_TOKEN
+
+### 6. Ver mi carrito / batch (requiere token)
+GET {{base}}/cart
+Authorization: Bearer {{token}}
+
+### 7. Agregar una prenda al batch
+### (consigue un garment_id real del paso 2)
+POST {{base}}/cart
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "garment_id": "PEGA_UN_GARMENT_ID"
+}
+
+### 8. Wishlist
+GET {{base}}/wishlist
+Authorization: Bearer {{token}}
+
+### 9. Detalle de una prenda
+GET {{base}}/garments/PEGA_UN_GARMENT_ID
+
+### 10. Historial de estados de una prenda (máquina de estados)
+GET {{base}}/garments/PEGA_UN_GARMENT_ID/states
+
+### 11. Cambiar estado de una prenda
+PATCH {{base}}/garments/PEGA_UN_GARMENT_ID/status
+Content-Type: application/json
+
+{
+  "status": "reserved",
+  "note": "Apartada para demo"
+}
+
+### 12. Devolver batch (prendas -> in_cleaning, vacía el carrito)
+POST {{base}}/cart/return
+Authorization: Bearer {{token}}
