@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retoño · Plan de despliegue en Vercel</title>
+<style>
+  :root{
+    --bg:#f4f3ef; --card:#ffffff; --ink:#1c1b19; --muted:#6b6a66;
+    --line:#e6e4dd; --accent:#3f7d58; --accent-soft:#e7f0ea;
+    --warn:#b4541f; --warn-soft:#fbeee4; --code:#23221f; --code-ink:#e9e7e0;
+    --radius:18px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 22px 80px}
+  header.hero{margin-bottom:28px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-soft);padding:5px 11px;border-radius:999px;font-weight:600}
+  h1{font-size:34px;line-height:1.1;margin:14px 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:16px;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .bento{grid-template-columns:repeat(6,1fr);margin:26px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 6px;font-size:15px;letter-spacing:.01em}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .c-3{grid-column:span 3}.c-2{grid-column:span 2}.c-6{grid-column:span 6}.c-4{grid-column:span 4}
+  .kpi{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px}
+  .accent{color:var(--accent)}
+  section{margin-top:38px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+    margin:0 0 14px;font-weight:700}
+  .arch{background:var(--code);color:var(--code-ink);border-radius:var(--radius);
+    padding:22px 24px;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.7;overflow-x:auto;white-space:pre}
+  .phase{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;box-shadow:var(--shadow);margin-bottom:14px}
+  .phase .head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .num{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:var(--accent);
+    color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+  .phase h3{margin:0;font-size:17px;letter-spacing:-.01em}
+  .phase ul{margin:8px 0 0;padding-left:20px;color:#34332f;font-size:14.5px}
+  .phase li{margin:5px 0}
+  code{background:#efeee8;border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .warn{background:var(--warn-soft);border:1px solid #f0d6c4;border-left:4px solid var(--warn);
+    border-radius:12px;padding:14px 16px;margin:10px 0;font-size:14px}
+  .warn b{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);overflow:hidden;font-size:13.5px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+  th{background:#faf9f6;font-weight:600;color:#34332f}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .p-ok{background:var(--accent-soft);color:var(--accent)}
+  .p-todo{background:#fdf3df;color:#9a7611}
+  .steps{counter-reset:s}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px 14px 52px;position:relative;margin-bottom:10px;font-size:14.5px}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:14px;
+    width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-size:12.5px;font-weight:700}
+  .step b{display:block;margin-bottom:2px}
+  footer{margin-top:46px;color:var(--muted);font-size:13px;text-align:center}
+  .legend{font-size:12.5px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag">Retoño · MVP web</span>
+    <h1>Plan de despliegue en Vercel</h1>
+    <p class="sub">Frontend React + Tailwind (Bento Grid) consumiendo el backend Express ya construido, todo en un solo proyecto Vercel. El Express se porta a funciones serverless bajo <code>/api</code>; Supabase queda detrás del backend con la <code>service_role key</code>.</p>
+  </header>
+
+  <div class="grid bento">
+    <div class="card c-2"><div class="kpi accent">1 repo</div><p>Un solo proyecto, un solo deploy. Se elimina el <code>.git</code> anidado del backend.</p></div>
+    <div class="card c-2"><div class="kpi">13</div><p>endpoints reales del backend que el frontend consumirá vía <code>/api/*</code>.</p></div>
+    <div class="card c-2"><div class="kpi">5</div><p>pantallas: catálogo, detalle, login/registro, carrito (batch), wishlist.</p></div>
+    <div class="card c-3"><h3>Frontend</h3><p>React 19 + Vite 8 + Tailwind. Estética Bento Grid / neominimal. Guarda <code>access_token</code> en localStorage y manda <code>Bearer</code>.</p></div>
+    <div class="card c-3"><h3>Backend</h3><p>Express → <code>api/index.js</code> serverless. Rutas montadas bajo <code>/api</code>. Sin <code>app.listen</code> en producción.</p></div>
+  </div>
+
+  <section>
+    <h2>Arquitectura objetivo</h2>
+    <div class="arch">Navegador (React SPA)
+   │  fetch  ${BASE}/api/...        BASE = ''  en prod  ·  http://localhost:3000 en dev
+   ▼
+┌─────────────────────────────────────────────┐
+│   PROYECTO ÚNICO EN VERCEL                    │
+│                                              │
+│   /            →  build estático de Vite     │
+│   /api/*       →  api/index.js  (Express)    │  ← serverless, lee env vars
+└───────────────────────┬──────────────────────┘
+                        │  service_role key (solo servidor)
+                        ▼
+                  Supabase  (Postgres + Auth + Storage)
+            tablas: garments · garment_states · cart_items · wishlist</div>
+    <p class="legend">Clave: la <code>service_role key</code> vive solo en las variables de entorno de Vercel (lado servidor). El navegador nunca la ve. Por eso <b>todo dato pasa por el backend</b> — el frontend no habla con Supabase directamente y no necesita la anon key.</p>
+  </section>
+
+  <section>
+    <h2>Avisos antes de empezar</h2>
+    <div class="warn"><b>Dependencias al raíz.</b> Vercel instala dependencias desde el <code>package.json</code> de la raíz. Hoy <code>express</code>, <code>cors</code>, <code>@supabase/supabase-js</code> y <code>multer</code> solo están en <code>backend/package.json</code>. Hay que moverlas/duplicarlas al <code>package.json</code> raíz o la función serverless fallará al importar.</div>
+    <div class="warn"><b>Estados reales ≠ documento del proyecto.</b> El documento dice <code>disponible/rentada/en evaluación/esterilizada/vendida</code>, pero el código usa <code>available · reserved · rented · in_cleaning · retired</code>. El frontend debe seguir al <b>backend</b>. Cambiar a español es otra tarea (tocar BD + backend primero).</div>
+    <div class="warn"><b>Bucket de Storage.</b> El endpoint <code>/upload</code> sube al bucket <code>garments</code> de Supabase Storage. Debe existir y ser público para que las imágenes se vean en el catálogo.</div>
+  </section>
+
+  <section>
+    <h2>Fases</h2>
+
+    <div class="phase">
+      <div class="head"><span class="num">0</span><h3>Consolidar el repositorio</h3></div>
+      <ul>
+        <li>Eliminar <code>backend/.git</code> para que sea un solo repo versionado.</li>
+        <li>Confirmar que <code>backend/.env</code> sigue en <code>.gitignore</code>. La <code>service_role key</code> jamás se commitea.</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="head"><span class="num">1</span><h3>Frontend React + Tailwind (Bento Grid)</h3></div>
+      <ul>
+        <li>Instalar y configurar Tailwind sobre el proyecto Vite existente.</li>
+        <li>Cliente API (wrapper <code>fetch</code>) que lee <code>VITE_API_URL</code> y adjunta el <code>Bearer</code>.</li>
+        <li>Contexto de auth: guardar <code>access_token</code> en localStorage, login/logout, rutas protegidas.</li>
+        <li>Router con 5 vistas: Catálogo, Detalle (+ historial de estados), Login/Registro, Carrito/Batch, Wishlist.</li>
+        <li>Sistema visual Bento Grid / neominimal aplicado a catálogo y tarjetas de prenda.</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="head"><span class="num">2</span><h3>Portar el Express a serverless</h3></div>
+      <ul>
+        <li>Extraer la app a un módulo reutilizable (sin <code>app.listen</code> en serverless).</li>
+        <li>Montar todas las rutas bajo <code>/api</code> (<code>/api/garments</code>, <code>/api/auth/login</code>, …).</li>
+        <li>Crear <code>api/index.js</code> que exporte la app por default.</li>
+        <li><code>vercel.json</code>: rewrite de <code>/api/(.*)</code> a la función + fallback SPA para el router del cliente.</li>
+        <li>Subir las dependencias del backend al <code>package.json</code> raíz (ver aviso).</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="head"><span class="num">3</span><h3>Config Supabase + Vercel (guiado paso a paso)</h3></div>
+      <ul>
+        <li>Supabase: verificar tablas (ya existen, el backend funciona), bucket <code>garments</code> público, copiar <code>SUPABASE_URL</code> + <code>service_role key</code>.</li>
+        <li>Vercel: importar el repo de GitHub, definir env vars en Production/Preview/Development, desplegar.</li>
+        <li>Dev local: <code>.env</code> del backend + <code>VITE_API_URL=http://localhost:3000</code>, correr ambos.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Contrato de la API (lo que el frontend consume)</h2>
+    <table>
+      <tr><th>Método · Ruta</th><th>Auth</th><th>Para qué</th></tr>
+      <tr><td><code>POST /api/auth/register</code></td><td>—</td><td>Crear cuenta</td></tr>
+      <tr><td><code>POST /api/auth/login</code></td><td>—</td><td>Devuelve <code>access_token</code></td></tr>
+      <tr><td><code>GET /api/garments?category=&size=&status=</code></td><td>—</td><td>Catálogo con filtros</td></tr>
+      <tr><td><code>GET /api/garments/:id</code></td><td>—</td><td>Detalle de prenda</td></tr>
+      <tr><td><code>GET /api/garments/:id/states</code></td><td>—</td><td>Historial de estados</td></tr>
+      <tr><td><code>PATCH /api/garments/:id/status</code></td><td>—</td><td>Cambiar estado</td></tr>
+      <tr><td><code>GET · POST · DELETE /api/cart</code></td><td>Bearer</td><td>Carrito / batch</td></tr>
+      <tr><td><code>POST /api/cart/return</code></td><td>Bearer</td><td>Devolver batch → in_cleaning</td></tr>
+      <tr><td><code>GET · POST · DELETE /api/wishlist</code></td><td>Bearer</td><td>Lista de deseos</td></tr>
+      <tr><td><code>POST /api/upload</code></td><td>Bearer</td><td>Subir imagen al bucket</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Estado del proyecto</h2>
+    <table>
+      <tr><th>Pieza</th><th>Estado</th><th>Nota</th></tr>
+      <tr><td>Backend Express + Supabase</td><td><span class="pill p-ok">Listo</span></td><td>13 endpoints funcionando</td></tr>
+      <tr><td>Base de datos Supabase</td><td><span class="pill p-ok">Conectada</span></td><td>4 tablas + trigger de estados</td></tr>
+      <tr><td>Frontend React</td><td><span class="pill p-todo">Por hacer</span></td><td>Hoy es el template default de Vite</td></tr>
+      <tr><td>Tailwind / Bento Grid</td><td><span class="pill p-todo">Por hacer</span></td><td>No instalado aún</td></tr>
+      <tr><td>Port serverless + Vercel</td><td><span class="pill p-todo">Por hacer</span></td><td><code>api/index.js</code> + <code>vercel.json</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Despliegue en Vercel · resumen de pasos</h2>
+    <div class="steps">
+      <div class="step"><b>Subir a GitHub</b>Un solo repo ya consolidado (sin <code>.git</code> anidado), con <code>.env</code> ignorado.</div>
+      <div class="step"><b>Importar en Vercel</b>New Project → elegir el repo. Vercel detecta el preset <b>Vite</b> automáticamente.</div>
+      <div class="step"><b>Variables de entorno</b>Agregar <code>SUPABASE_URL</code> y <code>SUPABASE_SERVICE_ROLE_KEY</code> en Production, Preview y Development.</div>
+      <div class="step"><b>Deploy</b>Vercel hace <code>npm run build</code> (frontend) y publica <code>api/index.js</code> como función serverless.</div>
+      <div class="step"><b>Verificar</b>Abrir <code>/api/health</code> → debe responder <code>Supabase OK</code> y el conteo de prendas.</div>
+    </div>
+    <p class="legend">El prompt para Claude Code (archivo aparte) trae estos pasos detallados con cada clic, porque mencionaste que nunca has usado Supabase ni Vercel.</p>
+  </section>
+
+  <footer>Retoño · plan de despliegue — la fuente de verdad es el backend, no el documento del proyecto.</footer>
+
+</div>
+</body>
+</html>
